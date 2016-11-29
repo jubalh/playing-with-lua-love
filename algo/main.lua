@@ -4,6 +4,7 @@ player = {x=nil,y=nil}
 goal = {x=nil,y=nil}
 maze = {}
 gamestate = {}
+move_timer = 0
 
 function setObjectPosition(obj, x, y, sign)
 	if obj.x ~= nil then
@@ -21,17 +22,6 @@ end
 function setGoalPosition(x, y)
 	setObjectPosition(goal, x, y, 'g')
 end
-
---[[
-function setPlayerPosition(x, y)
-	if player.x ~= nil then
-		maze[player.x][player.y] = ' '
-	end
-	player.x = x
-	player.y = y
-	maze[x][y] = 'p'
-end
---]]
 
 function create_obstacles()
 	for n=4,6 do
@@ -98,35 +88,46 @@ function love.draw()
 	end
 end
 
-function love.keypressed(key)
+function love.update(dt)
+	move_timer = move_timer + dt
+
 	if key == 'escape' then
-	elseif key == 's' or key == 'down' then
-		if maze[player.x][player.y+1] == ' ' then
-			setPlayerPosition(player.x, player.y+1)
-		elseif maze[player.x][player.y+1] == 'g' then
-			gamestate.running = false
-			gamestate.won = true
-		end
-	elseif key == 'w' or key == 'up' then
-		if maze[player.x][player.y-1] == ' ' then
-			setPlayerPosition(player.x, player.y-1)
-		elseif maze[player.x][player.y-1] == 'g' then
-			gamestate.running = false
-			gamestate.won = true
-		end
-	elseif key == 'd' or key == 'right' then
-		if maze[player.x+1][player.y] == ' ' then
-			setPlayerPosition(player.x+1, player.y)
-		elseif maze[player.x+1][player.y] == 'g' then
-			gamestate.running = false
-			gamestate.won = true
-		end
-	elseif key == 'a' or key == 'left' then
-		if maze[player.x-1][player.y] == ' ' then
-			setPlayerPosition(player.x-1, player.y)
-		elseif maze[player.x-1][player.y] == 'g' then
-			gamestate.running = false
-			gamestate.won = true
-		end
+		love.event.push('quit')
 	end
+
+	if move_timer > 0.1 then
+		if love.keyboard.isDown('s', 'down') then
+			if maze[player.x][player.y+1] == ' ' then
+				setPlayerPosition(player.x, player.y+1)
+			elseif maze[player.x][player.y+1] == 'g' then
+				gamestate.running = false
+				gamestate.won = true
+			end
+    	elseif love.keyboard.isDown('w', 'up') then
+			if maze[player.x][player.y-1] == ' ' then
+				setPlayerPosition(player.x, player.y-1)
+			elseif maze[player.x][player.y-1] == 'g' then
+				gamestate.running = false
+				gamestate.won = true
+			end
+    	elseif love.keyboard.isDown('d', 'right') then
+			if maze[player.x+1][player.y] == ' ' then
+				setPlayerPosition(player.x+1, player.y)
+			elseif maze[player.x+1][player.y] == 'g' then
+				gamestate.running = false
+				gamestate.won = true
+			end
+    	elseif love.keyboard.isDown('a', 'left') then
+			if maze[player.x-1][player.y] == ' ' then
+				setPlayerPosition(player.x-1, player.y)
+			elseif maze[player.x-1][player.y] == 'g' then
+				gamestate.running = false
+				gamestate.won = true
+			end
+		end
+		move_timer = 0
+	end
+end
+
+function love.keypressed(key)
 end
