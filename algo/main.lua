@@ -3,6 +3,7 @@ grid_size = 10
 player = {x=nil,y=nil}
 goal = {x=nil,y=nil}
 maze = {}
+gamestate = {}
 
 function setObjectPosition(obj, x, y, sign)
 	if obj.x ~= nil then
@@ -62,31 +63,38 @@ function love.load()
 	love.graphics.setBackgroundColor(40,128,33)
 	-- make some obstacles
 	create_obstacles()
+	-- set a goal
 	setGoalPosition(9, 7)
+
+	gamestate.running = true
 end
 
 function love.draw()
-	local x = 5
-	for i=1,grid_size do
-		local y = 5
-		for j=1,grid_size do
-
-			if maze[i][j] == ' ' then
-				love.graphics.rectangle('line', x, y, square_size, square_size)
-			elseif maze[i][j] == 'w' then
-				love.graphics.rectangle('fill', x, y, square_size, square_size)
-			elseif maze[i][j] == 'p' then
-				love.graphics.setColor(255,0,0)
-				love.graphics.rectangle('fill', x, y, square_size, square_size)
-				love.graphics.setColor(255,255,255)
-			elseif maze[i][j] == 'g' then
-				love.graphics.setColor(255,233,0)
-				love.graphics.rectangle('fill', x, y, square_size, square_size)
-				love.graphics.setColor(255,255,255)
+	if gamestate.running then
+		local x = 5
+		for i=1,grid_size do
+			local y = 5
+			for j=1,grid_size do
+				if maze[i][j] == ' ' then
+					love.graphics.rectangle('line', x, y, square_size, square_size)
+				elseif maze[i][j] == 'w' then
+					love.graphics.rectangle('fill', x, y, square_size, square_size)
+				elseif maze[i][j] == 'p' then
+					love.graphics.setColor(255,0,0)
+					love.graphics.rectangle('fill', x, y, square_size, square_size)
+					love.graphics.setColor(255,255,255)
+				elseif maze[i][j] == 'g' then
+					love.graphics.setColor(255,233,0)
+					love.graphics.rectangle('fill', x, y, square_size, square_size)
+					love.graphics.setColor(255,255,255)
+				end
+				y = y + 50
 			end
-		y = y + 50
+			x = x + 50
 		end
-		x = x + 50
+	elseif gamestate.won then
+        love.graphics.setColor(255,233,0)
+		love.graphics.print("You won!", 10, 250, 0, 2, 2)
 	end
 end
 
@@ -95,18 +103,30 @@ function love.keypressed(key)
 	elseif key == 's' or key == 'down' then
 		if maze[player.x][player.y+1] == ' ' then
 			setPlayerPosition(player.x, player.y+1)
+		elseif maze[player.x][player.y+1] == 'g' then
+			gamestate.running = false
+			gamestate.won = true
 		end
 	elseif key == 'w' or key == 'up' then
 		if maze[player.x][player.y-1] == ' ' then
 			setPlayerPosition(player.x, player.y-1)
+		elseif maze[player.x][player.y-1] == 'g' then
+			gamestate.running = false
+			gamestate.won = true
 		end
 	elseif key == 'd' or key == 'right' then
 		if maze[player.x+1][player.y] == ' ' then
 			setPlayerPosition(player.x+1, player.y)
+		elseif maze[player.x+1][player.y] == 'g' then
+			gamestate.running = false
+			gamestate.won = true
 		end
 	elseif key == 'a' or key == 'left' then
 		if maze[player.x-1][player.y] == ' ' then
 			setPlayerPosition(player.x-1, player.y)
+		elseif maze[player.x-1][player.y] == 'g' then
+			gamestate.running = false
+			gamestate.won = true
 		end
 	end
 end
