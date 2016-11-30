@@ -36,6 +36,16 @@ function setPlayerPosition(x, y)
 end
 
 function setGoalPosition(x, y)
+	if goal.x ~= nil then
+		-- in case player walked onto goal field
+		if maze[goal.x][goal.y] == 0 then
+			tmp = {}
+			tmp.x = goal.x
+			tmp.y = goal.y
+			setObjectPosition(goal, x, y, 'g')
+			setPlayerPosition(tmp.x, tmp.y)
+		end
+	end
 	setObjectPosition(goal, x, y, 'g')
 end
 
@@ -48,12 +58,12 @@ function create_obstacles()
 	end
 end
 
-function findway(x,y)
+function findway(maze,x,y)
 	if x+1 < grid_size then
 		if maze[x+1][y] ~= 'w' and maze[x+1][y] ~= 'g' then
 			if maze[x+1][y] == ' ' or maze[x+1][y] > maze[x][y] then
 				maze[x+1][y] = maze[x][y] + 1
-				findway(x+1, y)
+				findway(maze, x+1, y)
 			end
 		end
 	end
@@ -61,7 +71,7 @@ function findway(x,y)
 		if maze[x-1][y] ~= 'w' and maze[x-1][y] ~= 'g' then
 			if maze[x-1][y] == ' ' or maze[x-1][y] > maze[x][y] then
 				maze[x-1][y] = maze[x][y] + 1
-				findway(x-1, y)
+				findway(maze, x-1, y)
 			end
 		end
 	end
@@ -69,7 +79,7 @@ function findway(x,y)
 		if maze[x][y+1] ~= 'w' and maze[x][y+1] ~= 'g' then
 			if maze[x][y+1] == ' ' or maze[x][y+1] > maze[x][y] then
 				maze[x][y+1] = maze[x][y] + 1
-				findway(x, y+1)
+				findway(maze, x, y+1)
 			end
 		end
 	end
@@ -77,13 +87,13 @@ function findway(x,y)
 		if maze[x][y-1] ~= 'w' and maze[x][y-1] ~= 'g' then
 			if maze[x][y-1] == ' ' or maze[x][y-1] > maze[x][y] then
 				maze[x][y-1] = maze[x][y] + 1
-				findway(x, y-1)
+				findway(maze, x, y-1)
 			end
 		end
 	end
 end
 
-function recordway(x, y, index)
+function recordway(maze, x, y, index)
 	way[index] = {}
 	value = 99
 	if x+1 < grid_size then
@@ -123,11 +133,12 @@ function recordway(x, y, index)
 	if value == 0 then
 		return
 	else
-		recordway(way[index].x, way[index].y, index+1)
+		recordway(maze, way[index].x, way[index].y, index+1)
 	end
 end
 
 function love.load()
+	math.randomseed( os.time() )
 	-- init empty maze
 	for i=1,grid_size do
 		maze[i] = {}
@@ -157,6 +168,11 @@ end
 
 function love.draw()
 	if gamestate.running then
+		-- debug output
+		love.graphics.print("Player: X:" .. player.x .. " Y: " .. player.y , 100, 500, 0, 2, 2)
+		love.graphics.print("Goal: X:" .. goal.x .. " Y: " .. goal.y , 100, 520, 0, 2, 2)
+		love.graphics.print("out: " .. maze[player.x-1][player.y] , 100, 540 )
+		-- end debug output
 		local x = 5
 		for i=1,grid_size do
 			local y = 5
@@ -237,12 +253,20 @@ function love.keypressed(key)
 		love.event.push('quit')
 	end
 	if key == 'return' then
-		findway(player.x, player.y)
+		local new_maze = {}
+		for i=1,grid_size do
+			new_maze[i] = {}
+			for j=1,grid_size do
+				new_maze[i][j] = maze[i][j]
+			end
+		end
+		findway(new_maze, player.x, player.y)
 		way[1] = {}
 		way[1].x = goal.x
 		way[1].y = goal.y
-		recordway(goal.x, goal.y, 2)
+		recordway(new_maze, goal.x, goal.y, 2)
 
+		-- turn order around
 		local n = 1
 		turn = {}
 		for i = #way, 1, -1 do
@@ -254,4 +278,23 @@ function love.keypressed(key)
 		way = turn
 		walk_running = true
 	end
+	if key == 'r' then
+		pos = {}
+		repeat
+			pos = getRandomPosition()
+		until maze[pos.x][pos.y] == ' '
+		setGoalPosition(pos.x, pos.y)
+		way = {}
+		way_index = 1
+		walk_running = false
+	end
+end
+
+function getRandomPosition()
+	local pos = {}
+
+	pos.x = math.random(8) + 1
+	pos.y = math.random(8) + 1
+
+	return pos
 end
