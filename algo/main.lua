@@ -1,5 +1,6 @@
-square_size = 40
-grid_size = 10
+square_size = 20
+square_distance = 25
+grid_size = 15
 player = {x=nil,y=nil}
 goal = {x=nil,y=nil}
 --enemy = {x=nil,y=nil}
@@ -58,12 +59,12 @@ function create_obstacles()
 	end
 end
 
-function findway(maze,x,y)
+function calculate_distance(maze,x,y)
 	if x+1 < grid_size then
 		if maze[x+1][y] ~= 'w' and maze[x+1][y] ~= 'g' then
 			if maze[x+1][y] == ' ' or maze[x+1][y] > maze[x][y] then
 				maze[x+1][y] = maze[x][y] + 1
-				findway(maze, x+1, y)
+				calculate_distance(maze, x+1, y)
 			end
 		end
 	end
@@ -71,7 +72,7 @@ function findway(maze,x,y)
 		if maze[x-1][y] ~= 'w' and maze[x-1][y] ~= 'g' then
 			if maze[x-1][y] == ' ' or maze[x-1][y] > maze[x][y] then
 				maze[x-1][y] = maze[x][y] + 1
-				findway(maze, x-1, y)
+				calculate_distance(maze, x-1, y)
 			end
 		end
 	end
@@ -79,7 +80,7 @@ function findway(maze,x,y)
 		if maze[x][y+1] ~= 'w' and maze[x][y+1] ~= 'g' then
 			if maze[x][y+1] == ' ' or maze[x][y+1] > maze[x][y] then
 				maze[x][y+1] = maze[x][y] + 1
-				findway(maze, x, y+1)
+				calculate_distance(maze, x, y+1)
 			end
 		end
 	end
@@ -87,7 +88,7 @@ function findway(maze,x,y)
 		if maze[x][y-1] ~= 'w' and maze[x][y-1] ~= 'g' then
 			if maze[x][y-1] == ' ' or maze[x][y-1] > maze[x][y] then
 				maze[x][y-1] = maze[x][y] + 1
-				findway(maze, x, y-1)
+				calculate_distance(maze, x, y-1)
 			end
 		end
 	end
@@ -137,7 +138,34 @@ function recordway(maze, x, y, index)
 	end
 end
 
+function findway()
+	local new_maze = {}
+	for i=1,grid_size do
+		new_maze[i] = {}
+		for j=1,grid_size do
+			new_maze[i][j] = maze[i][j]
+		end
+	end
+	calculate_distance(new_maze, player.x, player.y)
+	way[1] = {}
+	way[1].x = goal.x
+	way[1].y = goal.y
+	recordway(new_maze, goal.x, goal.y, 2)
+
+	-- turn order around
+	local n = 1
+	turn = {}
+	for i = #way, 1, -1 do
+		turn[n] = {}
+		turn[n].x = way[i].x
+		turn[n].y = way[i].y
+		n = n + 1
+	end
+	way = turn
+end
+
 function love.load()
+	love.window.setMode(800, 600, {resizable=true})
 	math.randomseed( os.time() )
 	-- init empty maze
 	for i=1,grid_size do
@@ -169,10 +197,11 @@ end
 function love.draw()
 	if gamestate.running then
 		-- debug output
+		--[[
 		love.graphics.print("Player: X:" .. player.x .. " Y: " .. player.y , 100, 500, 0, 2, 2)
 		love.graphics.print("Goal: X:" .. goal.x .. " Y: " .. goal.y , 100, 520, 0, 2, 2)
 		love.graphics.print("out: " .. maze[player.x-1][player.y] , 100, 540 )
-		-- end debug output
+		--]]
 		local x = 5
 		for i=1,grid_size do
 			local y = 5
@@ -194,9 +223,9 @@ function love.draw()
 				else --if maze[i][j] == ' ' then
 					love.graphics.rectangle('line', x, y, square_size, square_size)
 				end
-				y = y + 50
+				y = y + square_distance
 			end
-			x = x + 50
+			x = x + square_distance
 		end
 	elseif gamestate.won then
         love.graphics.setColor(255,233,0)
@@ -252,32 +281,12 @@ function love.keypressed(key)
 	if key == 'escape' then
 		love.event.push('quit')
 	end
+	-- walk to goal
 	if key == 'return' then
-		local new_maze = {}
-		for i=1,grid_size do
-			new_maze[i] = {}
-			for j=1,grid_size do
-				new_maze[i][j] = maze[i][j]
-			end
-		end
-		findway(new_maze, player.x, player.y)
-		way[1] = {}
-		way[1].x = goal.x
-		way[1].y = goal.y
-		recordway(new_maze, goal.x, goal.y, 2)
-
-		-- turn order around
-		local n = 1
-		turn = {}
-		for i = #way, 1, -1 do
-			turn[n] = {}
-			turn[n].x = way[i].x
-			turn[n].y = way[i].y
-			n = n + 1
-		end
-		way = turn
+		findway()
 		walk_running = true
 	end
+	-- set goal to new position
 	if key == 'r' then
 		pos = {}
 		repeat
@@ -293,8 +302,8 @@ end
 function getRandomPosition()
 	local pos = {}
 
-	pos.x = math.random(8) + 1
-	pos.y = math.random(8) + 1
+	pos.x = math.random(grid_size - 2) + 1
+	pos.y = math.random(grid_size - 2) + 1
 
 	return pos
 end
