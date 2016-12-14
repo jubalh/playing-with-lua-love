@@ -1,14 +1,8 @@
-inspect = require 'inspect'
-
 function calculateDistance(m,x,y)
 	if tonumber(m[x][y]) ~= nil then
 	if x+1 < grid_size then
 		if m[x+1][y] ~= 'w' and m[x+1][y] ~= 'g' and m[x+1][y] ~= 'p' then
 			if m[x+1][y] == ' ' or m[x+1][y] > m[x][y] then
-				if tonumber(m[x][y]) == nil then
-					print(m[x][y])
-					os.exit(1)
-				end
 				m[x+1][y] = m[x][y] + 1
 				calculateDistance(m, x+1, y)
 			end
@@ -86,8 +80,11 @@ function recordWay(maze, x, y, index, way)
 end
 
 function findWay(maze, player, goal, way)
-	print("player: x: "..player.x.." y:"..player.y)
-	print("goal: x: "..goal.x.." y:"..goal.y)
+	if debug then
+		print("player: x: "..player.x.." y:"..player.y)
+		print("goal: x: "..goal.x.." y:"..goal.y)
+	end
+
 	-- copy maze
 	local new_maze = {}
 	for i=1,grid_size do

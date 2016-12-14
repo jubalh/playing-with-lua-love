@@ -2,37 +2,35 @@ require "position"
 require "maze"
 require "route"
 
-debug = true
+debug = false
+playersign = 'p'
+enemysign = 'e'
+goalsign = 'g'
 
--- size of each square
-square_size = 20
--- distance between squares
-square_distance = 25
--- size of the whole grid / gamefield
-grid_size = 15
 -- players
-player = {x=nil,y=nil,sign='p'}
-enemy = {x=nil,y=nil,sign='e'}
-goal = {x=nil,y=nil,sign='g'}
+local player = {x=nil, y=nil, sign=playersign}
+local enemy = {x=nil, y=nil, sign=enemysign}
+local goal = {x=nil, y=nil, sign=goalsign}
 -- maze
-maze = {}
+local maze = {}
 -- stores the way our path finding algo found to a certain goal
-player_route = {}
+local player_route = {}
 -- which step of the way we are at
-pr_index = 1
+local pr_index = 1
 
-enemy_route = {}
-er_index = 1
+local enemy_route = {}
+local er_index = 1
 
 gamestate = {running = false, won = false}
-walk_running = false
-move_timer = 0
+local walk_running = false
+local move_timer = 0
+local enemy_check_timer = 0
 
 function playerWalkToGoal()
 	if gamestate.running == true then
 		if walk_running == true then
 			if player_route[pr_index] ~= nil then
-				setPlayerPosition(player_route[pr_index].x, player_route[pr_index].y)
+				setObjectPosition(maze, player, player_route[pr_index].x, player_route[pr_index].y)
 				pr_index = pr_index + 1
 			end
 		end
@@ -43,8 +41,7 @@ function enemyWalkToPlayer()
 	if gamestate.running == true then
 		if walk_running == true then
 			if enemy_route[er_index] ~= nil then
-				print (enemy_route[er_index].x)--TODO: remove
-				setObjectPosition(enemy, enemy_route[er_index].x, enemy_route[er_index].y, 'e')
+				setObjectPosition(maze, enemy, enemy_route[er_index].x, enemy_route[er_index].y)
 				er_index = er_index + 1
 			end
 		end
@@ -56,17 +53,12 @@ function love.load()
 	love.graphics.setBackgroundColor(40,128,33)
 	math.randomseed( os.time() )
 
-	initMaze()
-	createObstacles()
+	initMaze(maze)
+	createObstacles(maze)
 
-	setPlayerPosition(2, 2)
-	setObjectPosition(enemy, 9, 8, 'e')
+	setObjectPosition(maze, player, 2, 2)
+	setObjectPosition(maze, enemy, 9, 8)
 	setGoalPosition(9, 9)
-	--[[
-	setPlayerPosition(9, 8)
-	setObjectPosition(enemy, 2, 2, 'e')
-	setGoalPosition(2, 2)
-	--]]
 
 	gamestate.running = true
 end
@@ -82,7 +74,7 @@ end
 
 function love.draw()
 	if gamestate.running then
-		drawMaze()
+		drawMaze(maze)
 		debugOutput()
 	elseif gamestate.won then
         love.graphics.setColor(255,233,0)
@@ -92,7 +84,12 @@ end
 
 function love.update(dt)
 	move_timer = move_timer + dt
+	enemy_check_timer = enemy_check_timer + dt
 
+	if enemy_check_timer > 1 then
+		enemy_route = findWay(maze, enemy, player, enemy_route) walk_running = true
+		enemy_check_timer = 0
+	end
 	if move_timer > 0.2 then
 
 		playerWalkToGoal()
@@ -100,41 +97,34 @@ function love.update(dt)
 
 		if love.keyboard.isDown('s', 'down') then
 			if maze[player.x][player.y+1] == ' ' then
-				setPlayerPosition(player.x, player.y+1)
+				setObjectPosition(maze, player, player.x, player.y+1)
 			elseif maze[player.x][player.y+1] == 'g' then
 				gamestate.running = false
 				gamestate.won = true
 			end
     	elseif love.keyboard.isDown('w', 'up') then
 			if maze[player.x][player.y-1] == ' ' then
-				setPlayerPosition(player.x, player.y-1)
+				setObjectPosition(maze, player, player.x, player.y-1)
 			elseif maze[player.x][player.y-1] == 'g' then
 				gamestate.running = false
 				gamestate.won = true
 			end
     	elseif love.keyboard.isDown('d', 'right') then
 			if maze[player.x+1][player.y] == ' ' then
-				setPlayerPosition(player.x+1, player.y)
+				setObjectPosition(maze, player, player.x+1, player.y)
 			elseif maze[player.x+1][player.y] == 'g' then
 				gamestate.running = false
 				gamestate.won = true
 			end
     	elseif love.keyboard.isDown('a', 'left') then
 			if maze[player.x-1][player.y] == ' ' then
-				setPlayerPosition(player.x-1, player.y)
+				setObjectPosition(maze, player, player.x-1, player.y)
 			elseif maze[player.x-1][player.y] == 'g' then
 				gamestate.running = false
 				gamestate.won = true
 			end
 		end
 
-		if gamestate.running and not gamestate.won then
-		end
-		--[[
-		if enemy.x > 2 then
-			setObjectPosition(enemy, enemy.x-1, enemy.y, 'e')
-		end
-		--]]
 		move_timer = 0
 	end
 end
@@ -157,4 +147,21 @@ function love.keypressed(key)
 		pr_index = 1
 		walk_running = false
 	end
+end
+
+--TODO:
+--also use setObjectPosition and maybe return something if we
+--kill another thing on that position?
+function setGoalPosition(x, y)
+	if goal.x ~= nil then
+		-- in case player walked onto goal field
+		if maze[goal.x][goal.y] == player.sign then
+			tmp = {}
+			tmp.x = goal.x
+			tmp.y = goal.y
+			setObjectPosition(maze, goal, x, y)
+			setObjectPosition(maze, player, tmp.x, tmp.y)
+		end
+	end
+	setObjectPosition(maze, goal, x, y)
 end
