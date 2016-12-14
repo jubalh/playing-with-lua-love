@@ -1,6 +1,7 @@
 function calculateDistance(maze,x,y)
+	if tonumber(maze[x][y]) ~= nil then
 	if x+1 < grid_size then
-		if maze[x+1][y] ~= 'w' and maze[x+1][y] ~= 'g' then
+		if maze[x+1][y] ~= 'w' and maze[x+1][y] ~= 'g' and maze[x+1][y] ~= 'e' then
 			if maze[x+1][y] == ' ' or maze[x+1][y] > maze[x][y] then
 				maze[x+1][y] = maze[x][y] + 1
 				calculateDistance(maze, x+1, y)
@@ -8,7 +9,7 @@ function calculateDistance(maze,x,y)
 		end
 	end
 	if x-1 > 1 then
-		if maze[x-1][y] ~= 'w' and maze[x-1][y] ~= 'g' then
+		if maze[x-1][y] ~= 'w' and maze[x-1][y] ~= 'g' and maze[x-1][y] ~= 'e' then
 			if maze[x-1][y] == ' ' or maze[x-1][y] > maze[x][y] then
 				maze[x-1][y] = maze[x][y] + 1
 				calculateDistance(maze, x-1, y)
@@ -16,7 +17,7 @@ function calculateDistance(maze,x,y)
 		end
 	end
 	if y+1 < grid_size then
-		if maze[x][y+1] ~= 'w' and maze[x][y+1] ~= 'g' then
+		if maze[x][y+1] ~= 'w' and maze[x][y+1] ~= 'g' and maze[x][y+1] ~= 'e' then
 			if maze[x][y+1] == ' ' or maze[x][y+1] > maze[x][y] then
 				maze[x][y+1] = maze[x][y] + 1
 				calculateDistance(maze, x, y+1)
@@ -24,7 +25,7 @@ function calculateDistance(maze,x,y)
 		end
 	end
 	if y-1 > 1 then
-		if maze[x][y-1] ~= 'w' and maze[x][y-1] ~= 'g' then
+		if maze[x][y-1] ~= 'w' and maze[x][y-1] ~= 'g' and maze[x][y-1] ~= 'e' then
 			if maze[x][y-1] == ' ' or maze[x][y-1] > maze[x][y] then
 				maze[x][y-1] = maze[x][y] + 1
 				calculateDistance(maze, x, y-1)
@@ -32,8 +33,9 @@ function calculateDistance(maze,x,y)
 		end
 	end
 end
+end
 
-function recordWay(maze, x, y, index)
+function recordWay(maze, x, y, index, way)
 	way[index] = {}
 	value = 99
 	if x+1 < grid_size then
@@ -73,11 +75,14 @@ function recordWay(maze, x, y, index)
 	if value == 0 then
 		return
 	else
-		recordWay(maze, way[index].x, way[index].y, index+1)
+		recordWay(maze, way[index].x, way[index].y, index+1, way)
 	end
 end
 
-function findWay()
+function findWay(maze, player, goal, way)
+	print("player: x: "..player.x.." y:"..player.y)
+	print("goal: x: "..goal.x.." y:"..goal.y)
+	-- copy maze
 	local new_maze = {}
 	for i=1,grid_size do
 		new_maze[i] = {}
@@ -85,11 +90,14 @@ function findWay()
 			new_maze[i][j] = maze[i][j]
 		end
 	end
+	-- find shortest way
 	calculateDistance(new_maze, player.x, player.y)
+	-- set first waypoint to goal
 	way[1] = {}
 	way[1].x = goal.x
 	way[1].y = goal.y
-	recordWay(new_maze, goal.x, goal.y, 2)
+	-- record the rest of the way
+	recordWay(new_maze, goal.x, goal.y, 2, way)
 
 	-- turn order around
 	local n = 1
@@ -100,5 +108,5 @@ function findWay()
 		turn[n].y = way[i].y
 		n = n + 1
 	end
-	way = turn
+	return turn
 end
