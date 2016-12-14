@@ -2,7 +2,7 @@ require "position"
 require "maze"
 require "route"
 
-debug = false
+debug = true
 
 -- size of each square
 square_size = 20
@@ -11,9 +11,9 @@ square_distance = 25
 -- size of the whole grid / gamefield
 grid_size = 15
 -- players
-player = {x=nil,y=nil}
-enemy = {x=nil,y=nil}
-goal = {x=nil,y=nil}
+player = {x=nil,y=nil,sign='p'}
+enemy = {x=nil,y=nil,sign='e'}
+goal = {x=nil,y=nil,sign='g'}
 -- maze
 maze = {}
 -- stores the way our path finding algo found to a certain goal
@@ -145,8 +145,8 @@ function love.keypressed(key)
 	end
 	-- walk to goal
 	if key == 'return' then
-		player_route = findWay(maze, player, goal, player_route)
-		--enemy_route = findWay(maze, enemy, player, enemy_route)
+		--player_route = findWay(maze, player, goal, player_route)
+		enemy_route = findWay(maze, enemy, player, enemy_route) walk_running = true
 		walk_running = true
 	end
 	-- set goal to new position

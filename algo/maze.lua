@@ -32,15 +32,15 @@ function drawMaze()
 		for j=1,grid_size do
 			if maze[i][j] == 'w' then
 				love.graphics.rectangle('fill', x, y, square_size, square_size)
-			elseif maze[i][j] == 0 then
+			elseif maze[i][j] == player.sign then
 				love.graphics.setColor(255,0,0)
 				love.graphics.rectangle('fill', x, y, square_size, square_size)
 				love.graphics.setColor(255,255,255)
-			elseif maze[i][j] == 'g' then
+			elseif maze[i][j] == goal.sign then
 				love.graphics.setColor(255,233,0)
 				love.graphics.rectangle('fill', x, y, square_size, square_size)
 				love.graphics.setColor(255,255,255)
-			elseif maze[i][j] == 'e' then
+			elseif maze[i][j] == enemy.sign then
 				love.graphics.setColor(0,0,0)
 				love.graphics.rectangle('fill', x, y, square_size, square_size)
 				love.graphics.setColor(255,255,255)

@@ -8,21 +8,21 @@ function setObjectPosition(obj, x, y, sign)
 end
 
 function setPlayerPosition(x, y)
-	setObjectPosition(player, x, y, 0)
+	setObjectPosition(player, x, y, player.sign)
 end
 
 function setGoalPosition(x, y)
 	if goal.x ~= nil then
 		-- in case player walked onto goal field
-		if maze[goal.x][goal.y] == 0 then
+		if maze[goal.x][goal.y] == player.sign then
 			tmp = {}
 			tmp.x = goal.x
 			tmp.y = goal.y
-			setObjectPosition(goal, x, y, 'g')
+			setObjectPosition(goal, x, y, goal.sign)
 			setPlayerPosition(tmp.x, tmp.y)
 		end
 	end
-	setObjectPosition(goal, x, y, 'g')
+	setObjectPosition(goal, x, y, goal.sign)
 end
 
 function getRandomPosition()
