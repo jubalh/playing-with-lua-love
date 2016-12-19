@@ -1,15 +1,13 @@
--- Quads:flip was removed in love 0.9.0
+-- love.graphics.newQuads:flip was removed in love 0.9.0
 -- love.graphics.draw provides all we need though
 -- with a x scale of -1 we can turn the image around
 -- we need to set the y scale explicitly since it defaults
 -- to the x scale otherwise
 
-local Quad = love.graphics.newQuad
-
 function love.load()
 	quads = {}
 	for i=1, 8 do
-		quads[i] = Quad((i-1)*32, 0, 32, 32, 256, 32)
+		quads[i] = love.graphics.newQuad((i-1)*32, 0, 32, 32, 256, 32)
 	end
 
 	character = {}
@@ -46,10 +44,8 @@ end
 
 function love.keypressed(key)
 	if key == 'right' or key == 'left' then
-		if quads then
-			direction = key
-			idle = false
-		end
+		direction = key
+		idle = false
 	end
 end
 
