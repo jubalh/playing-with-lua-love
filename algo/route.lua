@@ -87,9 +87,9 @@ function findWay(maze, player, goal, way)
 
 	-- copy maze
 	local new_maze = {}
-	for i=1,grid_size do
+	for i=1,#maze do
 		new_maze[i] = {}
-		for j=1,grid_size do
+		for j=1,#maze[i] do
 			-- substitute player sign with 0
 			if maze[i][j] == player.sign then
 				new_maze[i][j] = 0

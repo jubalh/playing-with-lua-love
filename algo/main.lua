@@ -6,10 +6,11 @@ debug = false
 playersign = 'p'
 enemysign = 'e'
 goalsign = 'g'
+gamestate = {running = false, won = false}
 
 -- players
 local player = {x=nil, y=nil, sign=playersign}
-local enemy = {x=nil, y=nil, sign=enemysign}
+local enemy = {x=nil, y=nil, sign=enemysign, last_player_pos = {x=0, y=0}}
 local goal = {x=nil, y=nil, sign=goalsign}
 -- maze
 local maze = {}
@@ -21,7 +22,6 @@ local pr_index = 1
 local enemy_route = {}
 local er_index = 1
 
-gamestate = {running = false, won = false}
 local walk_running = false
 local move_timer = 0
 local enemy_check_timer = 0
@@ -83,51 +83,53 @@ function love.draw()
 end
 
 function love.update(dt)
-	move_timer = move_timer + dt
-	enemy_check_timer = enemy_check_timer + dt
+	if gamestate.running then
+		move_timer = move_timer + dt
+		enemy_check_timer = enemy_check_timer + dt
 
-	if enemy_check_timer > 1 then
-		enemy_route = findWay(maze, enemy, player, enemy_route) walk_running = true
-		enemy_check_timer = 0
-	end
-	if move_timer > 0.2 then
-
-		playerWalkToGoal()
-		enemyWalkToPlayer()
-
-		if love.keyboard.isDown('s', 'down') then
-			if maze[player.x][player.y+1] == ' ' then
-				setObjectPosition(maze, player, player.x, player.y+1)
-			elseif maze[player.x][player.y+1] == 'g' then
-				gamestate.running = false
-				gamestate.won = true
-			end
-    	elseif love.keyboard.isDown('w', 'up') then
-			if maze[player.x][player.y-1] == ' ' then
-				setObjectPosition(maze, player, player.x, player.y-1)
-			elseif maze[player.x][player.y-1] == 'g' then
-				gamestate.running = false
-				gamestate.won = true
-			end
-    	elseif love.keyboard.isDown('d', 'right') then
-			if maze[player.x+1][player.y] == ' ' then
-				setObjectPosition(maze, player, player.x+1, player.y)
-			elseif maze[player.x+1][player.y] == 'g' then
-				gamestate.running = false
-				gamestate.won = true
-			end
-    	elseif love.keyboard.isDown('a', 'left') then
-			if maze[player.x-1][player.y] == ' ' then
-				setObjectPosition(maze, player, player.x-1, player.y)
-			elseif maze[player.x-1][player.y] == 'g' then
-				gamestate.running = false
-				gamestate.won = true
-			end
+		if enemy_check_timer > 1 then
+			enemy_findway()
+			enemy_check_timer = 0
 		end
 
-		move_timer = 0
-	end
-end
+		if move_timer > 0.15 then
+			playerWalkToGoal()
+			enemyWalkToPlayer()
+
+			if love.keyboard.isDown('s', 'down') then
+				if maze[player.x][player.y+1] == ' ' then
+					setObjectPosition(maze, player, player.x, player.y+1)
+					elseif maze[player.x][player.y+1] == 'g' then
+						gamestate.running = false
+						gamestate.won = true
+					end
+					elseif love.keyboard.isDown('w', 'up') then
+						if maze[player.x][player.y-1] == ' ' then
+							setObjectPosition(maze, player, player.x, player.y-1)
+							elseif maze[player.x][player.y-1] == 'g' then
+								gamestate.running = false
+								gamestate.won = true
+							end
+							elseif love.keyboard.isDown('d', 'right') then
+								if maze[player.x+1][player.y] == ' ' then
+									setObjectPosition(maze, player, player.x+1, player.y)
+									elseif maze[player.x+1][player.y] == 'g' then
+										gamestate.running = false
+										gamestate.won = true
+									end
+									elseif love.keyboard.isDown('a', 'left') then
+										if maze[player.x-1][player.y] == ' ' then
+											setObjectPosition(maze, player, player.x-1, player.y)
+											elseif maze[player.x-1][player.y] == 'g' then
+												gamestate.running = false
+												gamestate.won = true
+											end
+										end
+
+										move_timer = 0
+									end
+								end
+							end
 
 function love.keypressed(key)
 	if key == 'escape' then
@@ -136,7 +138,7 @@ function love.keypressed(key)
 	-- walk to goal
 	if key == 'return' then
 		--player_route = findWay(maze, player, goal, player_route)
-		enemy_route = findWay(maze, enemy, player, enemy_route) walk_running = true
+		enemy_findway()
 		walk_running = true
 	end
 	-- set goal to new position
@@ -164,4 +166,16 @@ function setGoalPosition(x, y)
 		end
 	end
 	setObjectPosition(maze, goal, x, y)
+end
+
+function enemy_findway()
+	-- if player moved position
+	if enemy.last_player_pos.x ~= player.x or enemy.last_player_pos.y ~= player.y then
+		-- calculate new way
+		enemy_route = findWay(maze, enemy, player, enemy_route)
+		--walk_running = true
+
+		enemy.last_player_pos.x = player.x
+		enemy.last_player_pos.y = player.y
+	end
 end
