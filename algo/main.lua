@@ -107,37 +107,40 @@ function love.update(dt)
 			if love.keyboard.isDown('s', 'down') then
 				if maze[player.x][player.y+1] == ' ' then
 					setObjectPosition(maze, player, player.x, player.y+1)
-					elseif maze[player.x][player.y+1] == 'g' then
-						gamestate.running = false
-						gamestate.won = true
-					end
-					elseif love.keyboard.isDown('w', 'up') then
-						if maze[player.x][player.y-1] == ' ' then
-							setObjectPosition(maze, player, player.x, player.y-1)
-							elseif maze[player.x][player.y-1] == 'g' then
-								gamestate.running = false
-								gamestate.won = true
-							end
-							elseif love.keyboard.isDown('d', 'right') then
-								if maze[player.x+1][player.y] == ' ' then
-									setObjectPosition(maze, player, player.x+1, player.y)
-									elseif maze[player.x+1][player.y] == 'g' then
-										gamestate.running = false
-										gamestate.won = true
-									end
-									elseif love.keyboard.isDown('a', 'left') then
-										if maze[player.x-1][player.y] == ' ' then
-											setObjectPosition(maze, player, player.x-1, player.y)
-											elseif maze[player.x-1][player.y] == 'g' then
-												gamestate.running = false
-												gamestate.won = true
-											end
-										end
+				elseif maze[player.x][player.y+1] == 'g' then
+					gamestate.running = false
+					gamestate.won = true
+				end
+			end
+			if love.keyboard.isDown('w', 'up') then
+				if maze[player.x][player.y-1] == ' ' then
+					setObjectPosition(maze, player, player.x, player.y-1)
+				elseif maze[player.x][player.y-1] == 'g' then
+					gamestate.running = false
+					gamestate.won = true
+				end
+			end
+			if love.keyboard.isDown('d', 'right') then
+				if maze[player.x+1][player.y] == ' ' then
+					setObjectPosition(maze, player, player.x+1, player.y)
+				elseif maze[player.x+1][player.y] == 'g' then
+					gamestate.running = false
+					gamestate.won = true
+				end
+			end
+			if love.keyboard.isDown('a', 'left') then
+				if maze[player.x-1][player.y] == ' ' then
+					setObjectPosition(maze, player, player.x-1, player.y)
+				elseif maze[player.x-1][player.y] == 'g' then
+					gamestate.running = false
+					gamestate.won = true
+				end
+			end
 
-										move_timer = 0
-									end
-								end
-							end
+			move_timer = 0
+		end
+	end
+end
 
 function love.keypressed(key)
 	if key == 'escape' then
