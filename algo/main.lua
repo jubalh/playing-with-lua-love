@@ -6,7 +6,7 @@ debug = false
 playersign = 'p'
 enemysign = 'e'
 goalsign = 'g'
-gamestate = {running = false, won = false}
+gamestate = {running = false, won = false, lost = false}
 
 -- players
 local player = {x=nil, y=nil, sign=playersign}
@@ -41,6 +41,10 @@ function enemyWalkToPlayer()
 	if gamestate.running == true then
 		if walk_running == true then
 			if enemy_route[er_index] ~= nil then
+				if maze[enemy_route[er_index].x][enemy_route[er_index].y] == playersign then
+					gamestate.lost = true
+					gamestate.running = false
+				end
 				setObjectPosition(maze, enemy, enemy_route[er_index].x, enemy_route[er_index].y)
 				er_index = er_index + 1
 			end
@@ -79,6 +83,10 @@ function love.draw()
 	elseif gamestate.won then
         love.graphics.setColor(255,233,0)
 		love.graphics.print("You won!", 10, 250, 0, 2, 2)
+	elseif gamestate.lost then
+		love.graphics.setBackgroundColor(196,2,51)
+        love.graphics.setColor(255,233,0)
+		love.graphics.print("You lost!", 10, 250, 0, 2, 2)
 	end
 end
 
