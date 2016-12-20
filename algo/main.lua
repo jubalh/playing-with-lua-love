@@ -92,14 +92,6 @@ end
 
 function love.update(dt)
 	if gamestate.running then
-		move_timer = move_timer + dt
-		enemy_check_timer = enemy_check_timer + dt
-
-		if enemy_check_timer > 1 then
-			enemy_findway()
-			enemy_check_timer = 0
-		end
-
 		if move_timer > 0.15 then
 			playerWalkToGoal()
 			enemyWalkToPlayer()
@@ -138,6 +130,14 @@ function love.update(dt)
 			end
 
 			move_timer = 0
+		end
+
+		move_timer = move_timer + dt
+		enemy_check_timer = enemy_check_timer + dt
+
+		if enemy_check_timer > 1 then
+			enemy_findway()
+			enemy_check_timer = 0
 		end
 	end
 end
